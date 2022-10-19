@@ -27,7 +27,8 @@ def list_of_primes(a,b):
     if flag == True:
       my_list.append(i)
   return my_list
-print(list_of_primes(1,20))
+print(list_of_primes(2,20))
+
 
 # Fisier Test_Functions.py
 
@@ -51,14 +52,15 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_list_of_primes(self):
-        expected_result = [1, 2, 3, 5, 7, 11, 13, 17, 19]
-        actual_result = list_of_primes(1, 20)
+        expected_result = [2, 3, 5, 7, 11, 13, 17, 19]
+        actual_result = list_of_primes(2, 20)
         self.assertIsInstance(actual_result, list )
         self.assertEqual(expected_result, actual_result)
 
 if __name__ == "__main__":
     if __name__ == "__main__":
         unittest.main()
+
 
 # EX 2. C09_EX04 (Tema ex2): Vrem sa ne cream un fisier csv numit phones in care sa avem cheile 'brand', 'model' si sa introducem lista urmatoare
 # list_of_phones = [{'brand': 'Iphone', 'model': '14'}, {'brand': 'Samsung', 'model': 'Galaxy S22'}, {'brand': 'Huawei', 'model': 'P50'}]
@@ -82,4 +84,3 @@ with open("Phones.csv", "w") as outfile:
     for dictionary in list_of_phones:
         writer.writerow(dictionary.values())
 
-        
