@@ -24,51 +24,100 @@
 # Creati un obiect de tip Patrat si jucati-va cu metodele lui
 # Creati un obiect de tip Cerc si jucati-va cu metodele lui
 
-class FormaGeometrica():
+from abc import ABC, abstractmethod
+
+class FormaGeometrica(ABC):
+    # pi = 3.14
     def __init__(self):
         self.pi = 3.14
-    def descrie(self):
+
+    @abstractmethod
+    def arie(self):
+        pass
+
+
+    def descriere(self):
         print('Cel mai probabil am colturi')
 
+
+
 class Patrat(FormaGeometrica):
-    def __init__(self, latura):
+    def __init__(self,latura):
         super().__init__()
         self.__latura = latura
+        print(f'In initul clasei patrat, pi= {self.pi}')
+
+    def arie(self):
+        return self.__latura**2
+
+    @property
+    def latura(self):
+        return self.__latura
+
+
+    # @latura.setter
+    def set_latura(self, new_latura):
+        self.__latura = new_latura
+
+    @latura.getter
     def get_latura(self):
-        print(self.__latura)
-    def set_latura(self,a):
-        self.__latura = a
-        print(self.__latura)
+        return self.__latura
+
+    @latura.deleter
     def del_latura(self):
-        del self.__latura
+        self.__latura = None
         print('Am sters latura')
+
+
 
 class Cerc(FormaGeometrica):
     def __init__(self, raza):
         super().__init__()
-        FormaGeometrica.__init__(self)
         self.__raza = raza
+    def arie(self):
+        return self.pi*(self.__raza**2)
+
+    @property
+    def raza(self):
+        return self.__raza
+
+    @raza.setter
+    def set_raza(self, new_raza):
+        self.__raza = new_raza
+
+    @raza.getter
     def get_raza(self):
-        print(self.__raza)
-    def set_raza(self,b):
-        self.__raza = b
-        print(self.__raza)
+        return self.__raza
+
+    @raza.deleter
     def del_raza(self):
-        del self.__raza
+        self.__raza = None
         print('Am sters raza')
-    def descrie(self):
+
+    def descriere(self):
         print('Eu nu am colturi')
 
-Patrat1 = Patrat(3000)
-Patrat1.get_latura()
-Patrat1.set_latura(2000)
-Patrat1.del_latura()
-Patrat1.descrie()
-Cerc1 = Cerc(20)
-Cerc1.get_raza()
-Cerc1.set_raza(30)
-Cerc1.del_raza()
-Cerc1.descrie()
+def descriere_interfata(obj):
+    obj.descriere()
+
+p1 = Patrat(4)
+p1.descriere()
+descriere_interfata(p1)
+
+print(f'Latura este {p1.latura}')
+print(f'Aria este {p1.arie()}')
+p1.set_latura(6)
+print(f'Noua latura este {p1.get_latura}')
+del p1.del_latura
+
+c = Cerc(9)
+c.descriere()
+descriere_interfata(c)
+print(f'Raza este {c.raza}')
+print(f'Aria este {c.arie()}')
+c.set_latura=6
+print(f'Noua raza este {c.get_raza}')
+del c.del_raza
 
 # Ex 2. Creati o clasa Student cu 2 atribute:
 # - name: str, numele studentului
@@ -80,40 +129,43 @@ Cerc1.descrie()
 # print(s)
 # c) Testati cele 3 functii creandu-va un student caruia sa ii dati nota 7, sa ii afisati detaliile, dupa care sa ii modificati nota in 10 si sa o afisati, iar ulterior sa o modificati in 12 pt a testa exceptia.
 
-class Student():
-    def __init__(self, name, grade):
-        self.name = name
-        self.__grade = grade
-    def get_grade(self):
-        print(self.__grade)
+class WrongGradeException(Exception):
+    pass
 
-    def set_grade(self,a):
-        self.__grade = a
-        print(self.__grade)
-    def describe(self):
-        print(f"The student's name is {self.name} and has the grade {self.__grade}")
+
+class Student:
+    def __init__(self, name, grade=None):
+        self.name = name
+        self.set_grade(grade)
+
+    def set_grade(self, new_grade):
+        if new_grade is not None:
+            try:
+                new_grade = int(round(new_grade))
+            except TypeError:
+                raise TypeError(f"The given grade ({new_grade}) is not a number!")
+            else:
+                if new_grade not in range(1, 11):
+                    raise WrongGradeException(f"The given grade ({new_grade}) is not valid!")
+                else:
+                    self.__grade = new_grade
+        else:
+            self.__grade = None
+
+    def get_grade(self):
+        return self.__grade
 
     def __str__(self):
-        return f'The student\'s name  is {self.name} and has the grade {self.__grade}'
+        return f"The student`s name is {self.name} and has the grade {self.get_grade()}"
+
+    def is_passing_grade(self):
+        return self.get_grade() >= 5
 
 
-class InvalidGradeError(Exception):
-    def __init__(self,name, grade):
-        super().__init__(name, grade)
-        self.__grade = grade
-try:
-    grade = int(input('Enter your grade '))
-    if grade <1 or grade >10:
-        raise InvalidGradeError('Sorry, the grade does not exist! ')
-    print(f'Student has the grade {grade} ')
-except ValueError:
-    print('Invalid input')
+my_student = Student("Christine Williams", 7)
+print(my_student)
+my_student.set_grade(10)
+print(my_student.get_grade())
+my_student.set_grade(11)
 
-except InvalidGradeError as ige:
-    print(ige)
 
-s = Student('Corina', 9)
-s.get_grade()
-s.set_grade(10)
-s.describe()
-print(s)

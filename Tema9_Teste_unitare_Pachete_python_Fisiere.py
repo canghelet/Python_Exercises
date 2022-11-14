@@ -84,3 +84,34 @@ with open("Phones.csv", "w") as outfile:
     for dictionary in list_of_phones:
         writer.writerow(dictionary.values())
 
+# Ex 3 C09_EX04 (Tema ex3):
+# 2. Write a function that will print all the details of a person in a readable way (first name, last name, age, sex, partner, children).
+# The function will receive the first_name and last_name of the person.
+# e.g.: show_details_by_first_and_last_name("Mike", "McMan") => First name: Mike
+#                                                               Last name McMan
+#                                                               Age: 52
+#                                                               Sex: M
+#                                                               Partner: Mary McMan
+#                                                               Children: ['Anna', 'Adrian', 'Danna']
+
+import json
+
+
+def show_details_by_first_and_last_name(people_dict, first_name, last_name):
+    for person_id, person in people_dict.items():
+        if person['last_name'] == last_name and person['first_name'] == first_name:
+            partner_first_name = people_dict.get(person.get('partner'), {}).get('first_name', '')
+            partner_last_name = people_dict.get(person.get('partner'), {}).get('last_name', '')
+
+            children = []
+            for child in person['children']:
+                children.append(people_dict[child]['first_name'])
+            print(f"""First name: {person['first_name']}\nLast name {person['last_name']}\nAge: {person['age']}"""
+                  f"""\nSex: {person['sex']}\nPartner: {partner_first_name} {partner_last_name}\nChildren: {children}""")
+
+
+
+with open('people.json') as f:
+    people = json.load(f)['people']
+
+show_details_by_first_and_last_name(people, "Mike", "McMan")

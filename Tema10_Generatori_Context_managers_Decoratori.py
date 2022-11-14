@@ -83,19 +83,22 @@ def get_tv_price(price):
 def get_laptop_price(price):
     return price
 
-def vat(origin_function):
-    def wrapper(price):
-        origin_function(price)
-        return price + price * 19/100
-    return wrapper
+def tva_decorator(original_func):
+    def wrapper_func(*args):
+        initial_price = original_func(*args)
+        final_price = 0.19 * initial_price + initial_price
+        print(f"Price with VAT is {final_price}")
+        return final_price
+    return wrapper_func
 
-@vat
+@tva_decorator
 def get_tv_price(price):
+    print(f"Price of TV is: {price}")
     return price
 
-
-@vat
+@tva_decorator
 def get_laptop_price(price):
+    print(f"Price of laptop is: {price}")
     return price
 
 print(get_tv_price(4000))
@@ -107,31 +110,20 @@ print(get_laptop_price(8000))
 #Ex: print(get_tv_price(2000, discount=25))   # daca se aplicam discount prima data si apoi tva obtinem 2000 - 500 = 1500 (discount) , 1500 +   285 (tva) =  1785 pretul final :)
 #get_tv_price(price)  # discount e considerat 10
 
-
-def discount(origin_function):
-    def wrapper(price, discount =10):
-        origin_function(price)
-        return price - price * discount/100
-    return wrapper
-
-
-def vat(origin_function):
-    def wrapper(price, discount = 10):
-        origin_function(price)
-        return price + price * 19/100
-    return wrapper
+def discount_decorator(original_func):
+    def wrapper_func(price, discount):
+        initial_price = original_func(price, discount)
+        final_price = initial_price - discount/100 * initial_price
+        print(f"Price with discount applied is {final_price}")
+        return final_price
+    return wrapper_func
 
 
-@discount
-@vat
-def get_tv_price(price, discount = 10):
+@discount_decorator
+@tva_decorator
+def get_tv_price(price, discount):
+    print(f"Price of TV is: {price}")
     return price
 
 
-@discount
-@vat
-def get_laptop_price(price, discount = 10):
-    return price
-
-print(get_tv_price(4000))
-print(get_laptop_price(8000, 20))
+get_tv_price(4000, 25)
