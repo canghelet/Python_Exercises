@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>ITF PY9 - Magazin online de cadouri</title>
+<!--        <link rel="icon" type="image/x-icon" href="{% static 'cadouri_de_poveste/assets/favicon.ico' %}" />&ndash;&gt;-->
+<!--         Font Awesome icons (free version)-->
+<!--        <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js" crossorigin="anonymous"></script>-->
+<!--         Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Lato:100,100i,300,300i,400,400i,700,700i,900,900i" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'cadouri_de_poveste/css/styles.css' %}" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+<!--         Navigation-->
+        {% if messages %}
+            {% for message in messages %}
+
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+              {{message}}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <h6/>Login<h6>
+<br/><br/>
+
+        <form action="" method = POST>
+            {% csrf_token %}
+
+
+            <form>
+  <div class="form-group">
+    <label for="exampleInputEmail1">User</label>
+    <input type="text" class="form-control" name="username" aria-describedby="emailHelp" placeholder="">
+<!--    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>-->
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Parola</label>
+    <input type="password" class="form-control" name="parola" placeholder="">
+  </div>
+  <div class="form-check">
+<!--    <input type="checkbox" class="form-check-input" id="exampleCheck1">-->
+<!--    <label class="form-check-label" for="exampleCheck1">Check me out</label>-->
+  </div>
+  <button type="submit" class="btn btn-primary">Autentificare</button>
+</form>

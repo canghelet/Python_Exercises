@@ -1,0 +1,9 @@
+{% load static %}
+<form method="POST">
+  {% csrf_token %}
+  <p>Esti sigur ca vrei sa stergi produsul din cos "{{ obj.id }}"?</p>
+  <div>
+    <button type="submit">Yes, Delete</button>
+    <a href="{{ request.META.HTTP_REFERER }}">Cancel</a>
+  </div>
+</form>
