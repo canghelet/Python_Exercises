@@ -83,237 +83,453 @@
 # handle win cases
 # ask to play again
 
-import random
+culori = ('Hearts', 'Clubs', 'Diamonds', 'Spades')
+valori = ('2', '3', '4', '5', '6', '7', '8',
+          '9', '10', 'J', 'Q', 'K', 'A')
+valori_in_joc = {
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9,
+    '10': 10,
+    'J': 10,
+    'Q': 10,
+    'K': 10,
+    'A': 11
+}
 
-suits = ('Hearts', 'Clubs', 'Diamonds', 'Spades')
-ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
-rank_to_value = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
+class Card:  # carte de joc
+    """Should be a representation of some sort of a card.
+    Should be able to understand the rank (2,3,.....K,A), suit (Diamonds, Hearts, Clubs, Spades) and probably the value of points as an integer.
+    !Tip: use some globals to define all of the possible ranks, suits and associated value for the ranks"""
 
-playing = True
-
-
-class Card:
-# creeaza toate cartile
-    def __init__(self, suit, rank):
-        self.suit = suit
-        self.rank = rank
+    def __init__(self, valoare, culoare):
+        self.valoare = valoare
+        self.culoare = culoare
+        self.punctaj = valori_in_joc[valoare]
 
     def __str__(self):
-        return self.rank + ' of ' + self.suit
+        return f"{self.valoare} de {self.culoare}"
 
 
-class Deck:
-# creeaza pachetul de carti
+c1 = Card("A", "Inima rosie")
+print(c1)
+#A de inima rosie
+
+from random import shuffle
+
+
+class Deck:  # pachet de carti
+    """Should create a new deck of 52 cards whenever we instantiate a deck.
+    Should hold a list of the cards, be able to shuffle the order of the cards and also be able to deal a card."""
+
     def __init__(self):
-        self.deck = []
-        for suit in suits:
-            for rank in ranks:
-                self.deck.append(Card(suit, rank))
+        self.pachet_carti = []
+        # ce inseamna tot pachetul de carti? cum il cream?
+        for valoare in valori:
+            for culoare in culori:
+                carte = Card(valoare, culoare)
+                self.pachet_carti.append(carte)
 
-    def __str__(self):
-        deck_combination = ''
-        for card in self.deck:
-            deck_combination += '\n ' + card.__str__()
-        return 'The deck has: ' + deck_combination
-# amesteca cartile
-    def shuffle(self):
-        random.shuffle(self.deck)
-# alege o carte din pachet
-    def deal(self):
-        single_card = self.deck.pop()
-        return single_card
+    # amestecam pachet
+    def amestecare_pachet(self):
+        shuffle(self.pachet_carti)
+
+    # tragem carte
+    def trage_carte(self):
+        carte = self.pachet_carti.pop()
+        return carte
+
+
+lst = [1, 2, 3, 4]
+lst.pop()  # returneaza si elimina ultimul elem din lista
+pachet = Deck()
+for c in pachet.pachet_carti:
+    print(c)
 
 
 class Player:
-# arata toate cartile pe care le are jucatorul
-    def __init__(self):
-        self.cards = []
-        self.value = 0
-        self.aces = 0
-        self.total = 100
-        self.bet = 0
-# alege carte pentru jucator
-    def add_card(self, card):
-        self.cards.append(card)
-        self.value += rank_to_value[card.rank]
-        if card.rank == 'A':
-            self.aces += 1
+    """Should hold a Player`s current list of cards. A player should be able to add (when hitting) or remove cards (when restarting game)
+    When adding cards, it should be either one (hit) card or two cards (when dealing at start of game).
+    Player should be also able to bet an amount of chips from their bankroll at the begining of a round"""
 
-    def adjust_for_ace(self):
-        while self.value > 21 and self.aces:
-            self.value -= 10
-            self.aces -= 1
-# colecteaza castigul
-    def win_bet(self):
-        self.total += self.bet
+    def __init__(self, nume, sold):
+        self.nume = nume
+        self.sold = sold
+        self.carti = []
+        self.scor = 0
+        self.nr_asi = 0  # avem nevoie de un atribut care sa memoreze cati 'A' avem in mana pentru a putea modifica punctaj din 11 in 1 la nevoie
 
-    def lose_bet(self):
-        self.total -= self.bet
+    def __str__(self):
+        return f"{self.nume} are soldul = {self.sold}"
+
+    def adauga_carte(self, carte_noua):
+        print(f"{self.nume} a tras o carte")
+        self.carti.append(carte_noua)
+        self.scor += carte_noua.punctaj
+        if carte_noua.valoare == 'A':
+            self.nr_asi += 1
+        if len(self.carti) == 2 and self.scor == 22:  # cazul in care avem 2 de 'A' in mana, scorul trebuie sa fie 21!
+            self.scor = 21
+        while self.scor > 21 and self.nr_asi:  # ajustam scorul in functie de cati Asi avem in mana daca s-a trecut de 21
+            # de ex: ['A', 2] = 11 + 2 = 13  + carte_noua('K')  => 13 + 10 = 23 , dar avem 'A' in lista de carti => 23-10=13
+            self.scor -= 10
+            self.nr_asi -= 1
+
+            # cand incepe o noua tura vrem sa ii golim mana (stergem cartile pe care le are)
+
+    def golire_mana(self):
+        self.carti.clear()
+        self.scor = 0
+
+    def arata_mana(self):
+        print(f"{self.nume} are in mana: {[str(c) for c in self.carti]} cu scorul: {self.scor}")
+
+    def verificare_sold(self):
+        return self.sold > 0
+
+    def pariaza(self):
+        suma_pariata = int(input("Alege suma pariata: "))
+        # tot cere input atata timp cat suma introdus e mai mare ca sold
+        while self.sold < suma_pariata:
+            print("Nu aveti destui bani!")
+            suma_pariata = int(input("Alege suma pariata: "))
+
+        self.sold -= suma_pariata
+        return suma_pariata
 
 
 class Dealer:
+    """Dealer is similar to Player with the exception that from the first 2 cards one is shown face up and the other face down.
+    """
 
     def __init__(self):
-        self.total = 100
-        self.bet = 0
-        self.cards = []
-        self.value = 0
-        self.aces = 0
-# alege carte pentru dealer
-    def add_card(self, card):
-        self.cards.append(card)
-        self.value += rank_to_value[card.rank]
-        if card.rank == 'A':
-            self.aces += 1
+        self.nume = 'Dealer'
+        self.carti = []
+        self.scor = 0
+        self.nr_asi = 0
 
-    def adjust_for_ace(self):
-        while self.value > 21 and self.aces:
-            self.value -= 10
-            self.aces -= 1
+    def verificare_sold(self):
+        return self.sold > 0
 
-    def win_bet(self):
-        self.total += self.bet
+    def adauga_carte(self, carte_noua):
+        print(f"{self.nume} a tras o carte")
+        self.carti.append(carte_noua)
+        self.scor += carte_noua.punctaj
+        if carte_noua.valoare == 'A':
+            self.nr_asi += 1
+        if len(self.carti) == 2 and self.scor == 22:  # cazul in care avem 2 de 'A' in mana, scorul trebuie sa fie 21!
+            self.scor = 21
+        while self.scor > 21 and self.nr_asi:  # de ex: ['A', 2] = 11 + 2 = 13  + carte_noua('K')  => 13 + 10 = 23 , dar avem 'A' in lista de carti => 23-10=13
+            self.scor -= 10
+            self.nr_asi -= 1
 
-    def lose_bet(self):
-        self.total -= self.bet
+    def arata_mana(self,
+                   arata_o_carte=False):  # in prima faza a jocului, Dealer`ul arata doar o carte, cealalta o pastreaza ascunsa pana termina de jucat Player`ul
+        if arata_o_carte:
+            print(f"{self.nume} are in mana: {self.carti[0]} cu scorul: {self.carti[0].punctaj}")
+        else:
+            print(f"{self.nume} are in mana: {[str(c) for c in self.carti]} cu scorul: {self.scor}")
+
+    def golire_mana(self):
+        self.carti.clear()
+        self.scor = 0
+    # dealer e similar cu player, doar ca nu pariaza
+
+    # regula cu trasul cartilor pana ajunge la 17 se implementeaza in play_game
 
 
-def take_bet(chips):
+def play_game():
+    """!Tip: Game will run in a while loop..."""
+    # initialize player and dealer
+    dealer = Dealer()
+
+    nume_jucator = input("Introduceti numele jucatorului: ")
+    sold = int(input("Alegeti suma de bani de pariat: "))
+    player = Player(nume_jucator, sold)
 
     while True:
-        try:
-            chips.bet = int(input("How many chips would you like to bet? "))
-        except ValueError:
-            print("Invalid number: ")
-        else:
-            if chips.bet > chips.total:
-                print("You cannot bet more than 100 chips!")
-            else:
-                break
+        # initialize deck and players hands (initializare pachet si mainile jucatorilor)
+        pachet = Deck()
+        pachet.amestecare_pachet()
+        dealer.golire_mana()
+        player.golire_mana()
 
-# alege carte cand introduce hit
-def hit(deck, hand):
-    hand.add_card(deck.deal())
-    hand.adjust_for_ace()
+        print(player)
 
-
-def hit_or_stay(deck, hand):
-    global playing
-
-    while True:
-        ask = input("\nWould you like to hit or stay? Enter 'h' for hit or 's' for stay: ")
-
-        if ask[0].lower() == 'h':
-            hit(deck, hand)
-        elif ask[0].lower() == 's':
-            print("Player stands, Dealer is playing.")
-            playing = False
-        else:
-            print("Please try again!")
-            continue
-        break
-
-# arata cartile la inceputul jocului, pentru jucator si dealer
-def show_some(player, dealer):
-    print("\nDealer's Hand: ")
-    print(" <card hidden>") # carte ascunsa pentru dealer
-    print("", dealer.cards[1])
-    print("\nPlayer's Hand: ", *player.cards, sep='\n ')
-
-# arata cartile la sfarsitul jocului
-def show_all(player, dealer):
-    print("\nDealer's Hand: ", *dealer.cards, sep='\n ')
-    print("Dealer's Hand =", dealer.value)
-    print("\nPlayer's Hand: ", *player.cards, sep='\n ')
-    print("Player's Hand =", player.value)
-
-
-# sfarsitul jocului
-
-def player_busts(player, dealer, chips):
-    print("PLAYER BUSTS!")
-    chips.lose_bet()
-
-
-def player_wins(player, dealer, chips):
-    print("PLAYER WINS!")
-    chips.win_bet()
-
-
-def dealer_busts(player, dealer, chips):
-    print("DEALER BUSTS!")
-    chips.win_bet()
-
-
-def dealer_wins(player, dealer, chips):
-    print("DEALER WINS!")
-    chips.lose_bet()
-
-
-def push(player, dealer):
-    print("Its a push! Player and Dealer tie!")
-
-
-# jocul
-
-while True:
-    print("Welcome to BlackJack!")
-
-    # amesteca cartile
-    deck = Deck()
-    deck.shuffle()
-
-    player_hand = Player()
-    player_hand.add_card(deck.deal())
-    player_hand.add_card(deck.deal())
-
-    dealer_hand = Player()
-    dealer_hand.add_card(deck.deal())
-    dealer_hand.add_card(deck.deal())
-
-    # chips
-    player_chips = Dealer()
-
-    # pariul
-    take_bet(player_chips)
-
-    # arata cartile
-    show_some(player_hand, dealer_hand)
-
-    while playing:
-
-        hit_or_stay(deck, player_hand)
-        show_some(player_hand, dealer_hand)
-
-        if player_hand.value > 21:
-            player_busts(player_hand, dealer_hand, player_chips)
+        # check if player has any chips to play a round and ask for a bet (verificare sold jucator si interogare pariu)
+        if not player.verificare_sold():
+            print(f"{player.nume} nu mai are bani :(... Multumim de bani!")
             break
 
-    if player_hand.value <= 21:
+        pariu = player.pariaza()
 
-        while dealer_hand.value < 17:
-            hit(deck, dealer_hand)
+        # deal cards
+        # 1.playerul primeste o carte
+        player.adauga_carte(pachet.trage_carte())  # adauga carte si actualizeaza scorul
+        # 2.dealerul primeste o carte
+        dealer.adauga_carte(pachet.trage_carte())
+        # 3.playerul primeste o carte
+        player.adauga_carte(pachet.trage_carte())
+        # 4.dealerul primeste o carte
+        dealer.adauga_carte(pachet.trage_carte())
 
-        show_all(player_hand, dealer_hand)
+        player.arata_mana()
+        dealer.arata_mana(arata_o_carte=True)
 
-        if dealer_hand.value > 21:
-            dealer_busts(player_hand, dealer_hand, player_chips)
+        # handle player turn
+        player_la_rand = True
+        while player_la_rand:
+            trage_sau_ramai = input("Vrei sa mai tragi o carte (apasa y) sau sa ramai (apasa n)? ")
+            if trage_sau_ramai[0].lower() == 'y':
+                print(f"{player.nume} mai trage o carte..")
+                player.adauga_carte(pachet.trage_carte())
+                player.arata_mana()
+            elif trage_sau_ramai[0].lower() == 'n':
+                print(f"{player.nume} ramane cu scorul de {player.scor}")
+                player_la_rand = False
+            else:
+                print("Ai ales o optiune invalida!! Alege y (yes) sau n (no): ")
 
-        elif dealer_hand.value > player_hand.value:
-            dealer_wins(player_hand, dealer_hand, player_chips)
+            if player.scor > 21:
+                print(f"{player.nume} a trecut de 21!")
+                player_la_rand = False
 
-        elif dealer_hand.value < player_hand.value:
-            player_wins(player_hand, dealer_hand, player_chips)
+        # handle dealer turn
+        if player.scor <= 21:
+            dealer.arata_mana()
+            while dealer.scor < 17:
+                dealer.adauga_carte(pachet.trage_carte())
+                dealer.arata_mana()
 
-        if player_hand.value > 21:
-            player_busts(player_hand, dealer_hand, player_chips)
+            # handle win cases
+            if dealer.scor == player.scor:
+                print(f"Egalitate")
+                player.sold += pariu
+            elif dealer.scor > player.scor and dealer.scor <= 21:
+                print(f"{dealer.nume} a castigat!")
+            else:
+                print(f"{player.nume} a castigat!")
+                player.sold += 2 * pariu
+        else:
+            print(f"{dealer.nume} a castigat!")
 
-    print("\nPlayer's winnings stand at", player_chips.total)
+        # ask to play again
+        mai_joci = input(f"{player.nume}, mai vrei sa joci o tura?? (y/n) ")
+        while mai_joci[0].lower() not in ('y', 'n'):
+            mai_joci = input(f"{player.nume}, mai vrei sa joci o tura?? (y/n) ")
 
-    new_game = input("\nWould you like to play again? Enter 'y' or 'n': ")
-    if new_game[0].lower() == 'y':
-        playing = True
-        continue
-    else:
-        print("\nThank you for playing!")
-        break
+        if mai_joci[0].lower() == 'n':
+            break
+
+    print(f"Multumesc pentru joc, {player.nume}!")
+
+
+play_game()
+
+
+# player primeste 1 carte
+# dealer primeste 1 carte (fata in jos - ascunsa)
+# player primeste 1 carte
+# dealer primeste 1 carte
+
+# Level 2: this is the mappings structures that you could use for setting suits and ranks and mapping of values
+
+# define yourself a suits tuple containig the possible suits (Hearts, Clubs...)
+# a ranks tuple with all the possible ranks (2, 3 .... K, A)
+# and a rank_to_value structure
+#suits = ('Hearts', 'Clubs', 'Diamonds', 'Spades')
+#ranks = ('2', '3', '4', '5', '6', '7', '8',
+         # '9', '10', 'J', 'Q', 'K', 'A')
+#rank_to_value = {
+#     '2': 2,
+#     '3': 3,
+#     '4': 4,
+#     '5': 5,
+#     '6': 6,
+#     '7': 7,
+#     '8': 8,
+#     '9': 9,
+#     '10': 10,
+#     'J': 10,
+#     'Q': 10,
+#     'K': 10,
+#     'A': 11
+# }
+
+
+# Level 3: this is the main loop of the game
+#def play_game():
+    # initialize player and dealer
+
+    #while True:
+
+
+# initialize deck and players hands
+
+# check if player has any chips to play a round and ask for a bet
+
+# deal cards
+
+# handle player turn
+
+# handle dealer turn
+
+# handle win cases
+
+# ask to play again
+
+
+# Imbunatatire in definirea claselor Player si Dealer prin folosirea mostenirii
+class BasePlayer:
+    def __init__(self, nume):
+        self.nume = nume
+        self.carti = []
+        self.scor = 0
+        self.nr_asi = 0
+
+    # adauga carte si actualizeaza scorul
+    def adauga_carte(self, carte_noua):
+        print(f"{self.nume} a tras o carte.")
+        self.carti.append(carte_noua)
+        self.scor += carte_noua.punctaj
+        if carte_noua.valoare == 'A':
+            self.nr_asi += 1
+        if len(self.carti) == 2 and self.scor == 22:  # cazul in care avem 2 de 'A' in mana, scorul trebuie sa fie 21!
+            self.scor = 21
+        while self.scor > 21 and self.nr_asi:  # ['A', 2] = 11 + 2 = 13  + carte_noua('K')  => 13 + 10 = 23 , dar avem 'A' in lista de carti => 23-10=13
+            self.scor -= 10
+            self.nr_asi -= 1
+
+    def golire_mana(self):
+        self.carti.clear()
+        self.scor = 0
+
+    def arata_mana(self, arata_o_carte=False):  # in cazul Player se cheama functia cu arata_o_carte=False mereu!
+        if arata_o_carte:
+            print(f"{self.nume} are in mana: {self.carti[0]} cu scorul: {self.carti[0].punctaj}")
+        else:
+            print(f"{self.nume} are in mana: {[str(c) for c in self.carti]} cu scorul: {self.scor}")
+
+
+class Player(BasePlayer):
+    def __init__(self, nume, sold):
+        self.sold = sold
+        super().__init__(nume)
+
+    def __str__(self):
+        return f"{self.nume} are soldul = {self.sold}"
+
+    def verificare_sold(self):
+        return self.sold > 0
+
+    def pariaza(self):
+        suma_pariata = int(input("Alege suma pariata: "))
+        # tot cere input atata timp cat suma introdus e mai mare ca sold
+        while self.sold < suma_pariata:
+            print("Nu aveti destui bani!")
+            suma_pariata = int(input("Alege suma pariata: "))
+
+        self.sold -= suma_pariata
+        return suma_pariata
+
+
+class Dealer(BasePlayer):
+    def __init__(self):
+        super().__init__("Dealer")
+
+    def __str__(self):
+        return f"{self.nume}"
+
+# Nu se modifica cu nimic functia play_game....
+
+def play_game():
+    """!Tip: Game will run in a while loop..."""
+    # initialize player and dealer
+    dealer = Dealer()
+
+    nume_jucator = input("Introduceti numele jucatorului: ")
+    sold = int(input("Alegeti suma de bani de pariat: "))
+    player = Player(nume_jucator, sold)
+
+    while True:
+        # initialize deck and players hands (initializare pachet si mainile jucatorilor)
+        pachet = Deck()
+        pachet.amestecare_pachet()
+        dealer.golire_mana()
+        player.golire_mana()
+
+        print(player)
+
+        # check if player has any chips to play a round and ask for a bet (verificare sold jucator si interogare pariu)
+        if not player.verificare_sold():
+            print(f"{player.nume} nu mai are bani :(... Multumim de bani!")
+            break
+
+        pariu = player.pariaza()
+
+        # deal cards
+        # 1.playerul primeste o carte
+        player.adauga_carte(pachet.trage_carte())  # adauga carte si actualizeaza scorul
+        # 2.dealerul primeste o carte
+        dealer.adauga_carte(pachet.trage_carte())
+        # 3.playerul primeste o carte
+        player.adauga_carte(pachet.trage_carte())
+        # 4.dealerul primeste o carte
+        dealer.adauga_carte(pachet.trage_carte())
+
+        player.arata_mana()
+        dealer.arata_mana(arata_o_carte=True)
+
+        # handle player turn
+        player_la_rand = True
+        while player_la_rand:
+            trage_sau_ramai = input("Vrei sa mai tragi o carte (apasa y) sau sa ramai (apasa n)? ")
+            if trage_sau_ramai[0].lower() == 'y':
+                print(f"{player.nume} mai trage o carte..")
+                player.adauga_carte(pachet.trage_carte())
+                player.arata_mana()
+            elif trage_sau_ramai[0].lower() == 'n':
+                print(f"{player.nume} ramane cu scorul de {player.scor}")
+                player_la_rand = False
+            else:
+                print("Ai ales o optiune invalida!! Alege y (yes) sau n (no): ")
+
+            if player.scor > 21:
+                print(f"{player.nume} a trecut de 21!")
+                player_la_rand = False
+
+        # handle dealer turn
+        if player.scor <= 21:
+            dealer.arata_mana()
+            while dealer.scor < 17:
+                dealer.adauga_carte(pachet.trage_carte())
+                dealer.arata_mana()
+
+            # handle win cases
+            if dealer.scor == player.scor:
+                print(f"Egalitate")
+                player.sold += pariu
+            elif dealer.scor > player.scor and dealer.scor <= 21:
+                print(f"{dealer.nume} a castigat!")
+            else:
+                print(f"{player.nume} a castigat!")
+                player.sold += 2 * pariu
+        else:
+            print(f"{dealer.nume} a castigat!")
+
+        # ask to play again
+        mai_joci = input(f"{player.nume}, mai vrei sa joci o tura?? (y/n) ")
+        while mai_joci[0].lower() not in ('y', 'n'):
+            mai_joci = input(f"{player.nume}, mai vrei sa joci o tura?? (y/n) ")
+
+        if mai_joci[0].lower() == 'n':
+            break
+
+    print(f"Multumesc pentru joc, {player.nume}!")
+
+play_game()
